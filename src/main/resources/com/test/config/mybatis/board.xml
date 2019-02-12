@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.test.board.board.BoardMapper">
+  <resultMap id="boardbean" type="hashmap">
+		<result column="bno" property="bno" javaType="int"/>
+		<result column="title" property="title" javaType="string" />
+		<result column="content" property="content" javaType="string" />
+		<result column="writer" property="writer" javaType="string" />
+		<result column="regdate" property="regdate" javaType="string" />
+		<result column="viewCnt" property="viewCnt" javaType="string" />
+  </resultMap>
+  
+  
+	<select id="getList" resultMap="boardbean">
+		SELECT
+			   BNO AS bno,    
+		       TITLE title,
+		       CONTENT content,
+		       WRITER writer,
+		       REGDATE regdate,
+		       VIEWCNT viewCnt
+		FROM BOARD
+	</select>
+  
+  </mapper>
