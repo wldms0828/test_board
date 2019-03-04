@@ -10,7 +10,7 @@ mainP=(()=>{
 mainP.page={
 		h:()=>{
 			$('#content').empty();
-			$('#content').html('김지은 게시판');
+			$('<img/>').addClass('main_img').attr({src:'resources/img/board.jpg'}).appendTo($('#content'));
 	    	$('<div/>').addClass('container').attr({id:"h_main"}).appendTo($('#content'));
 		}
 };

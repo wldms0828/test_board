@@ -2,6 +2,8 @@ package com.test.board.board;
 
 import java.util.Map;
 
+import lombok.Data;
+@Data
 public class PageProxy implements Proxy {
 	private Pagination pagination;
 	

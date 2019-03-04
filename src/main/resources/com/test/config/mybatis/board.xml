@@ -3,25 +3,160 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
   <mapper namespace="com.test.board.board.BoardMapper">
+  
   <resultMap id="boardbean" type="hashmap">
+        <result column="rnum" property="rnum" javaType="int"/>
 		<result column="bno" property="bno" javaType="int"/>
 		<result column="title" property="title" javaType="string" />
 		<result column="content" property="content" javaType="string" />
 		<result column="writer" property="writer" javaType="string" />
 		<result column="regdate" property="regdate" javaType="string" />
 		<result column="viewCnt" property="viewCnt" javaType="string" />
+		<result column="lev" property="lev" javaType="int" />
+		<result column="mxgpid" property="mxgpid" javaType="int" />
   </resultMap>
   
-  
-	<select id="getList" resultMap="boardbean">
-		SELECT
-			   BNO AS bno,    
-		       TITLE title,
-		       CONTENT content,
-		       WRITER writer,
-		       REGDATE regdate,
-		       VIEWCNT viewCnt
-		FROM BOARD
+  	<insert id="write">
+  		INSERT INTO BOARD(BNO, TITLE, CONTENT,WRITER, REGDATE,PASS, VIEWCNT,GROUPID,PARENTS,LEV) 
+  			VALUES (SEQ_BNO.nextval, #{title}, #{content}, #{writer}, TO_DATE(sysdate,'YYYY-MM-DD'), #{pass}, 0,(SELECT NVL(MAX(GROUPID),0)+1 FROM BOARD),#{parents},#{lev})
+  	</insert>
+  	<insert id="rewrite">
+  		INSERT INTO BOARD(BNO, TITLE, CONTENT,WRITER, REGDATE,PASS, VIEWCNT,GROUPID,PARENTS,LEV) 
+  			VALUES (SEQ_BNO.nextval, #{title}, #{content}, #{writer}, TO_DATE(sysdate,'YYYY-MM-DD'), #{pass}, 0,#{groupid},#{parents},#{lev})
+  	</insert>
+	<select id="getList" resultMap="boardbean" >
+		SELECT C.rnum AS rnum,
+				C.BNO AS bno,
+		        C.TITLE AS title, 
+			    C.CONTENT AS content, 
+			    C.WRITER AS writer, 
+			    C.REGDATE AS regdate, 
+			    C.VIEWCNT AS viewCnt,
+			    C.GROUPID AS GROUPID,
+			    C.PARENTS AS PARENTS,
+			    C.LEV AS LEV
+		FROM(SELECT  ROWNUM AS rrnum,
+		        B.RNUM AS rnum,
+				B.BNO AS bno,
+		        B.TITLE AS title, 
+			    B.CONTENT AS content, 
+			    B.WRITER AS writer, 
+			    B.REGDATE AS regdate, 
+			    B.VIEWCNT AS viewCnt,
+			    B.GROUPID AS GROUPID,
+			    B.PARENTS AS PARENTS,
+			    B.LEV AS LEV
+		FROM (SELECT ROWNUM AS rnum,
+							   A.BNO AS BNO,
+							   A.TITLE AS TITLE, 
+							   A.CONTENT AS CONTENT, 
+							   A.WRITER AS WRITER, 
+							   TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE,
+							   A.VIEWCNT AS VIEWCNT,
+							   A.GROUPID AS GROUPID,
+							   A.PARENTS AS PARENTS,
+							   A.LEV AS LEV
+				FROM
+					(SELECT 
+					        BNO AS BNO,
+					        TITLE AS TITLE, 
+							CONTENT AS CONTENT, 
+							WRITER AS WRITER, 
+		        			REGDATE AS REGDATE, 
+							VIEWCNT AS VIEWCNT,
+							GROUPID AS GROUPID,
+						    PARENTS AS PARENTS,
+						    LEV AS LEV
+					   FROM BOARD
+					   ORDER BY groupId , parents Desc, bno DESC
+					   ) A
+		               ORDER BY ROWNUM DESC
+				)B
+		    
+		    )C
+		where c.rrnum BETWEEN #{beginRow}  and #{endRow}
+						
 	</select>
-  
+
+  	<select id="list_cnt" resultType="int">
+  			SELECT COUNT(*) FROM BOARD
+  	</select>
+  	<select id="list_Search_cnt" resultType="int">
+  			SELECT COUNT(*) 
+  			FROM BOARD
+  			WHERE TITLE LIKE '%'||#{word}||'%'
+  	</select>
+	<select id="get" resultType="com.test.board.board.BoardDto">
+		 
+		 SELECT 
+				TITLE as title,
+				CONTENT,
+				WRITER,
+				REGDATE,
+				VIEWCNT
+		FROM BOARD
+		WHERE BNO = #{bno}
+	</select>
+	<select id="getListByBno" resultType="com.test.board.board.BoardDto">
+		 SELECT 
+		        BNO AS bno,
+				TITLE AS title,
+				CONTENT AS content,
+				WRITER AS writer,
+				REGDATE AS regdate,
+				VIEWCNT AS viewcnt
+		FROM BOARD
+		WHERE BNO = #{bno}
+	</select>
+	<select id="confirmPass" resultType="com.test.board.board.BoardDto">
+	
+		SELECT 
+		    TITLE AS title
+		FROM BOARD 
+		WHERE PASS = #{pass}
+		AND BNO = #{bno}
+
+	</select>
+  	<update id="w_modify"  >
+  		UPDATE BOARD SET TITLE=#{title},
+  						 CONTENT=#{content}
+  		WHERE PASS = #{pass}
+  	 	AND BNO = #{bno}
+  		
+  	</update>
+  	<delete id="w_delete">
+  		DELETE FROM BOARD WHERE PASS = #{pass}
+  							AND BNO = #{bno}
+  	</delete>
+  	<select id="searchByList" resultMap="boardbean">
+           SELECT C.rnum AS rnum,
+                       C.BNO AS bno,
+                         C.TITLE AS title,
+                        C.CONTENT AS content,
+                        C.WRITER AS writer,
+                        C.REGDATE AS regdate,
+                        C.VIEWCNT AS viewCnt
+                 FROM(SELECT  ROWNUM AS rrnum,
+                         B.RNUM AS rnum,
+                       B.BNO AS bno,
+                         B.TITLE AS title,
+                        B.CONTENT AS content,
+                        B.WRITER AS writer,
+                        B.REGDATE AS regdate,
+                        B.VIEWCNT AS viewCnt         
+                 FROM (SELECT ROWNUM AS rnum,
+                                   BNO AS BNO,
+                                   TITLE AS TITLE,
+                                   CONTENT AS CONTENT,
+                                   WRITER AS WRITER,
+                                   TO_CHAR(regdate,  'YY-MM-DD') AS REGDATE,
+                                   VIEWCNT AS VIEWCNT  
+                       FROM board
+                       WHERE TITLE LIKE '%'||#{word}||'%'
+                           order by rnum desc
+                       )B
+                  
+                     )C
+                 where c.rrnum BETWEEN #{beginRow} and #{endRow}
+  	</select>
   </mapper>

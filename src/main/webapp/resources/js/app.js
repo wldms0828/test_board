@@ -2,7 +2,6 @@
 var app = app || {};
 app=(()=>{
 	var init =x=>{
-		console.log('지으닝게시판이어요');
 		$.getScript(x+'/resources/js/router.js',
 				()=>{
 					$.extend(new Session(x)); 
@@ -21,7 +20,7 @@ app.router={
 					})
 				).done(x=>{
 					$('#footer').remove();
-					$('#wrapper').html((($.type($.cookie("userid")) === 'undefined')?nav():anav())+content()).append(footer());
+					$('#wrapper').html((($.type($.cookie("userId")) === 'undefined')?nav():lnav())+content()).append(footer());
 					mainP.home();
 					 $('#login_btn').click(e=>{
 							e.preventDefault();
@@ -40,46 +39,66 @@ app.router={
 							$('.nav-item').removeClass('active');
 							$('#board_btn').addClass('active');
 							$('#footer').remove();
-							$.getScript($.script()+'/board.js', ()=>{
-                             board.init($.context());
+							$.getScript($.script()+'/board.js', x=>{
+                             board.init(); 
+                             
                          });
                      });
+						$('.go_main').click(e=>{
+							e.preventDefault();
+							mainP.home();
+						});
+						
+						$('#m_d_page').click(e=>{
+							e.preventDefault();
+							alert('마이페이지를 구현해 보겠습니다~');
+						});
+						
+						$('#logout_btn').click(e=>{
+							e.preventDefault();
+							if($.removeCookie('userId')){
+								alert('로그아웃되었습니다.');
+								mainP.home();
+							}else{
+								alert('로그아웃 에러났음.');
+							}
+						});
 				})
 	}
 	
 };
-var nav =()=> '<div id = "navi" style="height:20%">'
-+'<nav class="navbar navbar-expand-lg class="navbar navbar-light" style="background-color: #e3f2fd;">'
-+'  <a class="navbar-brand" href="#">김지은</a>'
+var nav =()=> '<div id = "navi" style="height:10%">'
++'<nav class="navbar navbar-expand-lg class="navbar navbar-light" style="background-color: #e3f2fd; height: 100%;">'
++'  <a class="navbar-brand go_main" style="    font-size: -webkit-xxx-large; margin-top: 20px;" ></a>'
 +'  <div class="collapse navbar-collapse" id="navbarNavDropdown">'
-+'    <ul class="navbar-nav" >'
-+'      <li class="nav-item active">'
++'    <ul class="navbar-nav" style=" margin-top: 5px;">'
++'      <li class="nav-item active" style=" font-size: xx-large;">'
 +'        <a class="nav-link" id="board_btn">게시판 <span class="sr-only">(current)</span></a>'
 +'      </li>'
-+'      <li class="nav-item">'
-+'        <a class="nav-link" id="join_btn">회원가입</a>'
++'      <li class="nav-item" style=" font-size: xx-large;">'
++'        <a class="nav-link" id="join_btn"></a>'
 +'      </li>'
-+'      <li class="nav-item">'
-+'        <a class="nav-link" id="login_btn">로그인</a>'
++'      <li class="nav-item" style=" font-size: xx-large;">'
++'        <a class="nav-link" id="login_btn"></a>'
 +'      </li>'
 +'    </ul>'
 +'  </div>'
 +'</nav>'
 +'</div>';
 				
-var lnav=()=>' <div id = "navi" style="height:20%">'
+var lnav=()=>' <div id = "navi" style="height:10%">'
 +'<nav class="navbar navbar-expand-lg class="navbar navbar-light" style="background-color: #e3f2fd;">'
 +'  <a class="navbar-brand" href="#">김지은</a>'
 +'  <div class="collapse navbar-collapse" id="navbarNavDropdown">'
 +'    <ul class="navbar-nav" style="list-style:none">'
 +'      <li class="nav-item active">'
-+'        <a class="nav-link" href="#">게시판 <span class="sr-only">(current)</span></a>'
++'        <a class="nav-link" id="board_btn">게시판 <span class="sr-only">(current)</span></a>'
 +'      </li>'
 +'      <li class="nav-item">'
-+'        <a class="nav-link" href="#">마아페이지</a>'
++'        <a class="nav-link" id="m_d_page">마아페이지</a>'
 +'      </li>'
 +'      <li class="nav-item">'
-+'        <a class="nav-link" href="#">로그아웃</a>'
++'        <a class="nav-link" id="logout_btn">로그아웃</a>'
 +'      </li>'
 +'    </ul>'
 +'  </div>'
@@ -88,7 +107,7 @@ var lnav=()=>' <div id = "navi" style="height:20%">'
 				
 var content = () =>'<div id="content"><div/>';
 
-var footer = ()=>'<div id="footer" class="footer-distributed">'
+var footer = ()=>'<div id="footer" class="footer-distributed" style="background-color: whitesmoke;">'
 +'			<div class="footer-left">'
 +'				<h3>jieun board</h3>'
 +'				<p class="footer-links">'					
@@ -105,7 +124,7 @@ var footer = ()=>'<div id="footer" class="footer-distributed">'
 +'				</div>'
 +'				<div>'
 +'					<i class="fa fa-envelope"></i>'
-+'					<p><a href="mailto:support@company.com">support@ouroom.com</a></p>'
++'					<p><a href="mailto:support@company.com">support@jieuniiiiiii.com</a></p>'
 +'				</div>'
 +'			</div>'
 +'			<div class="footer-right">'

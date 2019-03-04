@@ -6,7 +6,139 @@
 	list-style:none;
 	padding-top: 15px;
 }
+#navbarNavDropdown{
+	width: 100%;
+}
 .bold_p{
 	font-size: xx-large;
     font-weight: bold;
+}
+li:active{
+	background-color: gray;
+}
+#wrapper{
+	max-width:80%;
+	margin: 0 auto;
+}
+#content{
+	margin: 0 auto;
+	text-align: center;
+    padding-bottom: 7%;
+}
+.p_bold{
+	font-size: 2em;
+    font-weight: bold;
+}
+#w_page,#r_page{
+
+	border: 1px solid black;
+}
+#d_btn{
+	margin-top: 2%;
+}
+#w_content,#u_content{
+	width: 76%; 
+    height: 100%;
+	overflow: auto;
+	word-wrap: break-word;
+	float: left;
+    margin-left: 10%;
+    
+}
+#p_2{
+	/* //padding-top: 2%; */
+	font-weight: bold;
+}
+#d_con_box{
+	/* height: 25%; */
+	/* overflow: auto; */
+	height:auto;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    word-wrap: break-word;
+  	text-align: left;
+}
+.w_con{
+	height: 30%;
+	color:#808080;
+	margin-top: 2%;
+}
+
+#th_c{
+	text-align: center;
+}
+#d_regdate{
+	width: 15%;
+
+}
+#d_writer{
+	width: 11%; 
+}
+
+.d_t{
+	text-align: center;
+    padding-top: 13px;
+} 
+.w_c_con{
+	float: left;
+    margin-left: 11%;
+}
+.w_title,.r_title{
+	width: 72%;
+    height: 3.5%;
+    margin-right: 45px;
+    height: 3.5%;
+}
+
+.autosize{min-height: 95px;}
+
+#pre_w{
+	background-color: #fff;
+    border: 1px solid #fff;
+    word-wrap: break-word;
+  	text-align: left;
+  	overflow:visible;
+  	/*overflow: hidden;
+  	 overflow-x:hidden; 
+  	overflow-y:auto; */
+    }
+#t_w{              
+	background-color: white;
+    border: 0px solid white;
+    font-size: 1.5em;
+}
+#t_t_w{
+	background-color: white;
+    border: 0px solid white;
+    padding: 0;
+    margin-top: 5px;
+    font-size: 1em;
+    padding-left: 10px;
+}
+#list_btn{
+	float: left;
+    margin-top: 2%;
+    font-size: x-large;
+    margin-left: 6%;
+}
+#pre_d_re{
+	padding-top: 3%;
+	padding-left:0;
+	background-color: #fff;
+    border: 1px solid #fff;
+}
+.r_c_con{
+	text-align: left;
+    margin-left: 11%;
+    width: 100%;
+}
+#pre_r{
+	background-color: #fff;
+    border: #fff;
+}
+#r_content{
+	width: 77%;
+    height: 20%;
+    float: left;
+    margin-left: 10%;
 }

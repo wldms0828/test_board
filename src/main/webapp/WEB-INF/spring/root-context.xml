@@ -35,6 +35,7 @@
 			<list>
 				<value>classpath:com/test/config/mybatis/board.xml</value>
 				<value>classpath:com/test/config/mybatis/member.xml</value>
+				<value>classpath:com/test/config/mybatis/reboard.xml</value>
 			</list>
 		</property> 
 	</bean>

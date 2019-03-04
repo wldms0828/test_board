@@ -19,11 +19,10 @@ jieun.page={
 					+'</div>'
 					+'ID : <input id="Login_id">'
 					+'<br>'
-					+'PW : <input id="Login_pass">'
+					+'PW : <input type="password" id="Login_pass">'
 					+'<br>'
 					+'<button id="l_btn">로그인</button>'
 					+'</div>');
-			
 			$('#l_btn').click(e=>{
 				e.preventDefault();
 				if($('#Login_id').val()=='' || $('#Login_pass').val()==''){
@@ -43,7 +42,8 @@ jieun.page={
 							}else if(d.pwValid==='WRONG'){
 								alert('비밀번호를 잘못 입력하셨습니다');
 							}else{
-								$.cookie('userId', d.value.bno);
+								$.cookie('userId', d.value.userId);
+								console.log('d.value.useriId : ',d.value.userId);
 								alert('로그인 성공');
 								app.router.main();
 							}
@@ -66,9 +66,9 @@ jieun.page={
 					+'</div>'
 					+'ID : <input id="id_input"></input>'
 					+'<br>'
-					+'PASSWORD : <input id="pass_input"></input>'
+					+'PASSWORD : <input type="password" id="pass_input"></input>'
 					+'<br>'
-					+'비밀번호 확인 : <input id="pass_con_input"></input>'
+					+'비밀번호 확인 : <input type="password" id="pass_con_input"></input>'
 					+'<br>'
 					+'NAME : <input id="name_input"></input>'
 					+'<br>'
