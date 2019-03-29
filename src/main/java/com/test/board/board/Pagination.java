@@ -36,9 +36,11 @@ public class Pagination implements Proxy {
 		this.nextBlock = beginPage + blockSize; // 다음 버튼
 		this.existPrev = (preBlock>=0); // 이전 버튼 생성 여부
 		this.existNext=(nextBlock <= pageCount ); // 다음버튼 생성 여부
-		this.firstPage=1; //맨앞
-		//this.lastPage=(totalPage>endPage)?totalPage+1:totalPage+1; //맨뒤
-		this.lastPage = (rowCount%pageSize)>0? (rowCount/pageSize)+1 : rowCount/pageSize; //맨뒤
+		if(blockCount != 1 && blockCount != 0) {
+			this.firstPage=1; //맨앞
+			//this.lastPage=(totalPage>endPage)?totalPage+1:totalPage+1; //맨뒤
+			this.lastPage = (rowCount%pageSize)>0? (rowCount/pageSize)+1 : rowCount/pageSize; //맨뒤
+		}
 		
 		if(endRow>rowCount) {
 			endRow = rowCount;

@@ -14,68 +14,250 @@
 		<result column="viewCnt" property="viewCnt" javaType="string" />
 		<result column="lev" property="lev" javaType="int" />
 		<result column="mxgpid" property="mxgpid" javaType="int" />
+		<result column="delYN" property="delYN" javaType="string" />
+		<result column="cntRev" property="cntRev" javaType="string" />
+		<result column="step" property="step" javaType="string" />
+		<result column="groupid" property="groupid" javaType="string" />
+		<result column="rrrum" property="rrrum" javaType="int" />
+		<result column="fname" property="fname" javaType="string" />
+		<result column="mfname" property="mfname" javaType="string" />
+		<result column="fsize" property="fsize" javaType="string" />
+		<result column="fno" property="fno" javaType="int" />
+		<result column="fileCnt" property="fileCnt" javaType="int" />
+		<result column="rnum" property="rnum" javaType="int" />
+  </resultMap>
+  
+   <resultMap id="reviewbean" type="hashmap">
+		<result column="content" property="content" javaType="string" />
+		<result column="writer" property="writer" javaType="string" />
+		<result column="regdate" property="regdate" javaType="string" />
+		<result column="reviewSeq" property="reviewSeq" javaType="string" />
+		<result column="delYN" property="delYN" javaType="string" />
   </resultMap>
   
   	<insert id="write">
-  		INSERT INTO BOARD(BNO, TITLE, CONTENT,WRITER, REGDATE,PASS, VIEWCNT,GROUPID,PARENTS,LEV) 
-  			VALUES (SEQ_BNO.nextval, #{title}, #{content}, #{writer}, TO_DATE(sysdate,'YYYY-MM-DD'), #{pass}, 0,(SELECT NVL(MAX(GROUPID),0)+1 FROM BOARD),#{parents},#{lev})
+  		INSERT INTO BOARD(BNO, TITLE, CONTENT, WRITER, REGDATE,PASS, VIEWCNT,GROUPID,PARENTS,LEV,STEP) 
+  			VALUES (SEQ_BNO.nextval, #{title}, #{content}, #{writer}, TO_DATE(sysdate,'YYYY-MM-DD'), #{pass}, 0,(SELECT NVL(MAX(GROUPID),0)+1 FROM BOARD),#{parents},#{lev},#{step})
   	</insert>
+ 	
   	<insert id="rewrite">
-  		INSERT INTO BOARD(BNO, TITLE, CONTENT,WRITER, REGDATE,PASS, VIEWCNT,GROUPID,PARENTS,LEV) 
-  			VALUES (SEQ_BNO.nextval, #{title}, #{content}, #{writer}, TO_DATE(sysdate,'YYYY-MM-DD'), #{pass}, 0,#{groupid},#{parents},#{lev})
+  		INSERT INTO BOARD(BNO, TITLE, CONTENT,WRITER, REGDATE,PASS, VIEWCNT,GROUPID,PARENTS,LEV,STEP) 
+  			VALUES (SEQ_BNO.nextval, #{title}, #{content}, #{writer}, TO_DATE(sysdate,'YYYY-MM-DD'), #{pass}, 0,#{groupid},#{parents},#{lev},#{step})
   	</insert>
+  	
+  	<insert id="fileInsert">
+  		 INSERT INTO FILEDB(fno, fname, fsize, bno, mfname) 
+  		 	VALUES (FNO_SEQ.nextval, #{fname}, #{fsize} , ${bno},#{mfname})
+  	</insert>
+  	
+  	<select id="searchBoardBno" resultType="int">
+  		SELECT MAX(bno) FROM BOARD
+  	</select>
+  	
+   	<select id="findMfname" resultType="com.test.board.board.FileDTO">
+  		SELECT SUBSTR( mfname, 97) as mfname
+   			,fno
+  			, fname
+  			, fsize
+  			, bno
+  		FROM filedb
+        WHERE fno = #{fno}
+  	</select> 
+  	
+  	<update id="updateStep">
+		UPDATE BOARD SET step = step+1
+        WHERE step >= #{step}
+        AND GROUPID = #{groupid}
+  	</update>
+  	
+  	<insert id="revWrite">
+  		INSERT INTO REVIEW(BNO, REVIEWSEQ, WRITER, PASS, REGDATE, CONTENT) 
+  			VALUES (#{bno}, RESEQ_bno.nextval, #{writer}, #{pass}, TO_DATE(sysdate,'YYYY-MM-DD'), #{content})
+  	</insert>
+  	  	
+  	<select id="revList" resultMap="reviewbean">
+  		SELECT WRITER AS writer ,
+  			   TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE,
+  			   CONTENT AS content,
+  			   DELYN AS delYN
+  		FROM REVIEW
+  	</select>
+  	
+  	<select id="getReview" resultMap="reviewbean">
+  	SELECT C.rrnum AS rnum,
+        C.BNO AS bno,
+        C.WRITER AS writer, 
+        C.REGDATE AS REGDATE, 
+        C.CONTENT AS content,
+        C.PASS AS pass,
+        C.REVIEWSEQ AS reviewSeq
+        ,C.DELYN AS DELYN
+	from(select      ROWNUM AS rrnum,
+							   B.rnum AS rnum,
+                               B.BNO AS bno,
+							   B.WRITER AS writer, 
+							   B.REGDATE AS REGDATE, 
+							   B.CONTENT AS content,
+							   B.PASS AS pass,
+							   B.REVIEWSEQ AS reviewSeq
+							   ,B.DELYN AS DELYN
+       from (SELECT            ROWNUM AS rnum,
+							   A.BNO AS bno,
+							   A.WRITER AS writer, 
+							   A.REGDATE AS REGDATE, 
+							   A.CONTENT AS content,
+							   A.PASS AS pass,
+							   A.REVIEWSEQ AS reviewSeq
+							   ,A.DELYN AS DELYN
+		FROM(SELECT         WRITER AS writer ,
+			  			    TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE,
+			  			    CONTENT AS content,
+			  			    REVIEWSEQ AS reviewSeq,
+			  			    BNO AS bno,
+			  			    PASS AS pass
+			  			    ,DELYN AS delYN
+					   FROM REVIEW
+					   ORDER BY REVIEWSEQ DESC
+					   ) A
+		               ORDER BY ROWNUM asc)B)c
+		where C.rrnum BETWEEN #{beginRow}  and #{endRow}
+
+  	</select>
+  	
+  	<select id="revListByBno" resultType="com.test.board.board.ReviewDto">
+  		SELECT WRITER AS writer ,
+  			   TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE,
+  			   CONTENT AS content,
+  			   REVIEWSEQ AS reviewSeq,
+  			   BNO AS bno,
+  			   PASS AS pass
+  		FROM REVIEW
+  		WHERE BNO = #{bno} 
+  		ORDER BY REVIEWSEQ DESC
+  	</select>
+  	
+  	<select id="relist_cnt" resultType="int">
+  		SELECT COUNT( DELYN ) FROM REVIEW
+  		WHERE BNO = #{bno}
+  	</select>
+  	
+  	<select id="cnt_delYN" resultType="int">
+  		select count (decode (delYN,'Y',1))
+        FROM REVIEW
+        WHERE BNO = #{bno}
+  	</select>
+  	
+  	<select id="revListBySeq" resultType="com.test.board.board.ReviewDto">
+  		SELECT WRITER AS writer ,
+  			   TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE,
+  			   CONTENT AS content,
+  			   REVIEWSEQ AS reviewSeq,
+  			   BNO AS bno,
+  			   PASS AS pass
+  			   ,DELYN AS delYN
+  		FROM REVIEW
+  		WHERE REVIEWSEQ = #{reviewSeq} 
+  	</select>
+  		
+<!--    	<delete id="revDel" >
+   		DELETE FROM REVIEW
+   		WHERE PASS = #{pass}
+  		AND REVIEWSEQ = #{reviewSeq}
+   	</delete> -->
+   	
+   	  	<update id="revDel_deleteYN">
+  		UPDATE REVIEW SET delYN ='Y'
+		WHERE BNO = #{bno}
+		AND PASS = #{pass}
+		AND REVIEWSEQ = #{reviewSeq}
+  	</update>
+  	
+  	<update id="revMo">
+  		UPDATE REVIEW SET 
+  		CONTENT = #{content}
+  		WHERE PASS = #{pass}
+  		AND REVIEWSEQ = #{reviewSeq}
+  	</update>
+  	
 	<select id="getList" resultMap="boardbean" >
-		SELECT C.rnum AS rnum,
-				C.BNO AS bno,
-		        C.TITLE AS title, 
-			    C.CONTENT AS content, 
-			    C.WRITER AS writer, 
-			    C.REGDATE AS regdate, 
-			    C.VIEWCNT AS viewCnt,
-			    C.GROUPID AS GROUPID,
-			    C.PARENTS AS PARENTS,
-			    C.LEV AS LEV
-		FROM(SELECT  ROWNUM AS rrnum,
-		        B.RNUM AS rnum,
-				B.BNO AS bno,
-		        B.TITLE AS title, 
-			    B.CONTENT AS content, 
-			    B.WRITER AS writer, 
-			    B.REGDATE AS regdate, 
-			    B.VIEWCNT AS viewCnt,
-			    B.GROUPID AS GROUPID,
-			    B.PARENTS AS PARENTS,
-			    B.LEV AS LEV
-		FROM (SELECT ROWNUM AS rnum,
-							   A.BNO AS BNO,
-							   A.TITLE AS TITLE, 
-							   A.CONTENT AS CONTENT, 
-							   A.WRITER AS WRITER, 
-							   TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE,
-							   A.VIEWCNT AS VIEWCNT,
-							   A.GROUPID AS GROUPID,
-							   A.PARENTS AS PARENTS,
-							   A.LEV AS LEV
+		SELECT          
+                D.rnum AS rnum
+				,D.BNO AS bno
+		        ,D.TITLE AS title
+			    ,D.CONTENT AS content 
+			    ,D.WRITER AS writer 
+			    ,D.REGDATE AS regdate 
+			    ,D.VIEWCNT AS viewCnt
+			    ,D.GROUPID AS GROUPID
+			    ,D.PARENTS AS PARENTS
+			    ,D.LEV AS LEV
+			    ,D.DELYN AS delYN
+			    ,D.STEP AS STEP
+			    ,(SELECT COUNT(DELYN) FROM REVIEW WHERE review.bno=D.bno and delYN='N' ) AS cntRev
+			    ,(SELECT COUNT(BNO) FROM filedb WHERE filedb.bno=D.bno ) AS fileCnt
+		FROM (SELECT          
+                ROWNUM AS ru
+                ,C.rnum AS rnum
+				,C.BNO AS bno
+		        ,C.TITLE AS title 
+			    ,C.CONTENT AS content 
+			    ,C.WRITER AS writer 
+			    ,C.REGDATE AS regdate 
+			    ,C.VIEWCNT AS viewCnt
+			    ,C.GROUPID AS GROUPID
+			    ,C.PARENTS AS PARENTS
+			    ,C.LEV AS LEV
+			    ,C.DELYN AS delYN
+			    ,C.STEP AS STEP
+			    ,(SELECT COUNT(BNO) FROM REVIEW WHERE review.bno=C.bno ) AS cntRev
+		FROM(SELECT  ROWNUM AS rrnum
+		        ,B.RNUM AS rnum
+				,B.BNO AS bno
+		        ,B.TITLE AS title 
+			    ,B.CONTENT AS content 
+			    ,B.WRITER AS writer 
+			    ,B.REGDATE AS regdate 
+			    ,B.VIEWCNT AS viewCnt
+			    ,B.GROUPID AS GROUPID
+			    ,B.PARENTS AS PARENTS
+			    ,B.LEV AS LEV
+			    ,B.DELYN AS DELYN
+			    ,B.STEP AS STEP
+		FROM (SELECT ROWNUM AS rnum
+							   ,A.BNO AS BNO
+							   ,A.TITLE AS TITLE 
+							   ,A.CONTENT AS CONTENT 
+							   ,A.WRITER AS WRITER 
+							   ,TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE
+							   ,A.VIEWCNT AS VIEWCNT
+							   ,A.GROUPID AS GROUPID
+							   ,A.PARENTS AS PARENTS
+							   ,A.LEV AS LEV
+							   ,A.DELYN AS DELYN
+							   ,A.STEP AS STEP
 				FROM
 					(SELECT 
-					        BNO AS BNO,
-					        TITLE AS TITLE, 
-							CONTENT AS CONTENT, 
-							WRITER AS WRITER, 
-		        			REGDATE AS REGDATE, 
-							VIEWCNT AS VIEWCNT,
-							GROUPID AS GROUPID,
-						    PARENTS AS PARENTS,
-						    LEV AS LEV
+					        BNO AS BNO
+					        ,TITLE AS TITLE 
+							,CONTENT AS CONTENT 
+							,WRITER AS WRITER 
+		        			,REGDATE AS REGDATE 
+							,VIEWCNT AS VIEWCNT
+							,GROUPID AS GROUPID
+						    ,PARENTS AS PARENTS
+						    ,LEV AS LEV
+						    ,DELYN AS DELYN
+						    ,STEP AS STEP
 					   FROM BOARD
-					   ORDER BY groupId , parents Desc, bno DESC
+					  
+					   ORDER BY bno 
 					   ) A
 		               ORDER BY ROWNUM DESC
 				)B
-		    
+		    order by groupId desc, step
 		    )C
-		where c.rrnum BETWEEN #{beginRow}  and #{endRow}
-						
+      )D
+		where d.ru BETWEEN #{beginRow}  and #{endRow}
 	</select>
 
   	<select id="list_cnt" resultType="int">
@@ -85,8 +267,9 @@
   			SELECT COUNT(*) 
   			FROM BOARD
   			WHERE TITLE LIKE '%'||#{word}||'%'
+  			AND DELYN = 'N'
   	</select>
-	<select id="get" resultType="com.test.board.board.BoardDto">
+<!-- 	<select id="get" resultType="com.test.board.board.BoardDto">
 		 
 		 SELECT 
 				TITLE as title,
@@ -96,17 +279,34 @@
 				VIEWCNT
 		FROM BOARD
 		WHERE BNO = #{bno}
-	</select>
+	</select> -->
 	<select id="getListByBno" resultType="com.test.board.board.BoardDto">
-		 SELECT 
-		        BNO AS bno,
-				TITLE AS title,
-				CONTENT AS content,
-				WRITER AS writer,
-				REGDATE AS regdate,
-				VIEWCNT AS viewcnt
-		FROM BOARD
-		WHERE BNO = #{bno}
+        SELECT 
+            BNO AS bno,
+            TITLE AS title,
+            CONTENT AS content,
+            WRITER AS writer,
+            REGDATE AS regdate,
+            VIEWCNT AS viewcnt,
+            GROUPID AS groupid,
+            LEV AS lev,
+            PARENTS AS parents,
+            DELYN AS delYN,
+            STEP AS step
+            ,PASS AS pass
+      	FROM BOARD 
+        WHERE bno = #{bno}
+	</select>
+	
+	<select id="getFileByBno" resultMap="boardbean">
+       SELECT fname AS fname
+              ,mfname AS mfname
+              ,fno AS fno
+              ,fsize AS fsize 
+              ,(SELECT SUM(fsize) FROM filedb where bno = #{bno}) AS fsum
+        FROM filedb
+        WHERE bno= #{bno}
+        ORDER BY fno DESC
 	</select>
 	<select id="confirmPass" resultType="com.test.board.board.BoardDto">
 	
@@ -121,42 +321,270 @@
   		UPDATE BOARD SET TITLE=#{title},
   						 CONTENT=#{content}
   		WHERE PASS = #{pass}
-  	 	AND BNO = #{bno}
+  	 	AND BNO = ${bno}
   		
   	</update>
-  	<delete id="w_delete">
+  	
+<!--   	<select id="modiPass" resultType="int" >
+  		SELECT COUNT(TITLE) FROM BOARD
+  		WHERE PASS = #{pass}
+  		AND BNO = #{bno}
+  	</select> -->
+<!--   	<delete id="w_delete">
   		DELETE FROM BOARD WHERE PASS = #{pass}
   							AND BNO = #{bno}
-  	</delete>
+  	</delete> -->
+  	
+  	<update id="w_deleteYN">
+  		UPDATE BOARD SET delYN ='Y'
+		WHERE BNO = #{bno}
+		AND PASS = #{pass}
+  	</update>
+  	
+
   	<select id="searchByList" resultMap="boardbean">
-           SELECT C.rnum AS rnum,
-                       C.BNO AS bno,
-                         C.TITLE AS title,
-                        C.CONTENT AS content,
-                        C.WRITER AS writer,
-                        C.REGDATE AS regdate,
-                        C.VIEWCNT AS viewCnt
-                 FROM(SELECT  ROWNUM AS rrnum,
-                         B.RNUM AS rnum,
-                       B.BNO AS bno,
-                         B.TITLE AS title,
-                        B.CONTENT AS content,
-                        B.WRITER AS writer,
-                        B.REGDATE AS regdate,
-                        B.VIEWCNT AS viewCnt         
-                 FROM (SELECT ROWNUM AS rnum,
-                                   BNO AS BNO,
-                                   TITLE AS TITLE,
-                                   CONTENT AS CONTENT,
-                                   WRITER AS WRITER,
-                                   TO_CHAR(regdate,  'YY-MM-DD') AS REGDATE,
-                                   VIEWCNT AS VIEWCNT  
-                       FROM board
-                       WHERE TITLE LIKE '%'||#{word}||'%'
-                           order by rnum desc
-                       )B
-                  
-                     )C
-                 where c.rrnum BETWEEN #{beginRow} and #{endRow}
+        
+            SELECT          
+                D.rnum AS rnum,
+				D.BNO AS bno,
+		        D.TITLE AS title, 
+			    D.CONTENT AS content, 
+			    D.WRITER AS writer, 
+			    D.REGDATE AS regdate, 
+			    D.VIEWCNT AS viewCnt,
+			    D.GROUPID AS GROUPID,
+			    D.PARENTS AS PARENTS,
+			    D.LEV AS LEV
+			    ,D.DELYN AS delYN
+			    ,D.STEP AS STEP
+			    ,(SELECT COUNT(DELYN) FROM REVIEW WHERE review.bno=D.bno and delYN='N' ) AS cntRev
+				,(SELECT COUNT(BNO) FROM filedb WHERE filedb.bno=D.bno ) AS fileCnt
+		FROM (SELECT          
+                ROWNUM AS ru
+                ,C.rnum AS rnum,
+				C.BNO AS bno,
+		        C.TITLE AS title, 
+			    C.CONTENT AS content, 
+			    C.WRITER AS writer, 
+			    C.REGDATE AS regdate, 
+			    C.VIEWCNT AS viewCnt,
+			    C.GROUPID AS GROUPID,
+			    C.PARENTS AS PARENTS,
+			    C.LEV AS LEV
+			    ,C.DELYN AS delYN
+			    ,C.STEP AS STEP
+			    ,(SELECT COUNT(BNO) FROM REVIEW WHERE review.bno=C.bno ) AS cntRev
+		FROM(SELECT  ROWNUM AS rrnum,
+		        B.RNUM AS rnum,
+				B.BNO AS bno,
+		        B.TITLE AS title, 
+			    B.CONTENT AS content, 
+			    B.WRITER AS writer, 
+			    B.REGDATE AS regdate, 
+			    B.VIEWCNT AS viewCnt,
+			    B.GROUPID AS GROUPID,
+			    B.PARENTS AS PARENTS,
+			    B.LEV AS LEV
+			    ,B.DELYN AS DELYN
+			    ,B.STEP AS STEP
+		FROM (SELECT ROWNUM AS rnum,
+							   A.BNO AS BNO,
+							   A.TITLE AS TITLE, 
+							   A.CONTENT AS CONTENT, 
+							   A.WRITER AS WRITER, 
+							   TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE,
+							   A.VIEWCNT AS VIEWCNT,
+							   A.GROUPID AS GROUPID,
+							   A.PARENTS AS PARENTS,
+							   A.LEV AS LEV
+							   ,A.DELYN AS DELYN
+							   ,A.STEP AS STEP
+				FROM
+					(SELECT 
+					        BNO AS BNO,
+					        TITLE AS TITLE, 
+							CONTENT AS CONTENT, 
+							WRITER AS WRITER, 
+		        			REGDATE AS REGDATE, 
+							VIEWCNT AS VIEWCNT,
+							GROUPID AS GROUPID,
+						    PARENTS AS PARENTS,
+						    LEV AS LEV
+						    ,DELYN AS DELYN
+						    ,STEP AS STEP
+					   FROM BOARD
+					   WHERE TITLE LIKE '%'||#{word}||'%'
+					   AND DELYN = 'N'
+					   ORDER BY bno 
+					   ) A
+		               ORDER BY rnum DESC
+				)B
+		    )C
+      )D
+		where d.ru BETWEEN #{beginRow}  and #{endRow}
+                
   	</select>
+  	<select id="downExcel" resultType="com.test.board.board.BoardDto">
+  		SELECT          
+                D.rnum AS rnum
+				,D.BNO AS bno
+		        ,D.TITLE AS title
+			    ,D.CONTENT AS content 
+			    ,D.WRITER AS writer 
+			    ,D.REGDATE AS regdate 
+			    ,D.VIEWCNT AS viewCnt
+			    ,D.GROUPID AS GROUPID
+			    ,D.PARENTS AS PARENTS
+			    ,D.LEV AS LEV
+			    ,D.DELYN AS delYN
+			    ,D.STEP AS STEP
+			    ,(SELECT COUNT(DELYN) FROM REVIEW WHERE review.bno=D.bno and delYN='N' ) AS cntRev
+			    ,(SELECT COUNT(BNO) FROM filedb WHERE filedb.bno=D.bno ) AS fileCnt
+		FROM (SELECT          
+                ROWNUM AS ru
+                ,C.rnum AS rnum
+				,C.BNO AS bno
+		        ,C.TITLE AS title 
+			    ,C.CONTENT AS content 
+			    ,C.WRITER AS writer 
+			    ,C.REGDATE AS regdate 
+			    ,C.VIEWCNT AS viewCnt
+			    ,C.GROUPID AS GROUPID
+			    ,C.PARENTS AS PARENTS
+			    ,C.LEV AS LEV
+			    ,C.DELYN AS delYN
+			    ,C.STEP AS STEP
+			    ,(SELECT COUNT(BNO) FROM REVIEW WHERE review.bno=C.bno ) AS cntRev
+		FROM(SELECT  ROWNUM AS rrnum
+		        ,B.RNUM AS rnum
+				,B.BNO AS bno
+		        ,B.TITLE AS title 
+			    ,B.CONTENT AS content 
+			    ,B.WRITER AS writer 
+			    ,B.REGDATE AS regdate 
+			    ,B.VIEWCNT AS viewCnt
+			    ,B.GROUPID AS GROUPID
+			    ,B.PARENTS AS PARENTS
+			    ,B.LEV AS LEV
+			    ,B.DELYN AS DELYN
+			    ,B.STEP AS STEP
+		FROM (SELECT ROWNUM AS rnum
+							   ,A.BNO AS BNO
+							   ,A.TITLE AS TITLE 
+							   ,A.CONTENT AS CONTENT 
+							   ,A.WRITER AS WRITER 
+							   ,TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE
+							   ,A.VIEWCNT AS VIEWCNT
+							   ,A.GROUPID AS GROUPID
+							   ,A.PARENTS AS PARENTS
+							   ,A.LEV AS LEV
+							   ,A.DELYN AS DELYN
+							   ,A.STEP AS STEP
+				FROM
+					(SELECT 
+					        BNO AS BNO
+					        ,TITLE AS TITLE 
+							,CONTENT AS CONTENT 
+							,WRITER AS WRITER 
+		        			,REGDATE AS REGDATE 
+							,VIEWCNT AS VIEWCNT
+							,GROUPID AS GROUPID
+						    ,PARENTS AS PARENTS
+						    ,LEV AS LEV
+						    ,DELYN AS DELYN
+						    ,STEP AS STEP
+					   FROM BOARD
+					   where delyn = 'N'
+					   ORDER BY bno 
+					   ) A
+		               ORDER BY ROWNUM DESC
+				)B
+		    order by groupId desc, step
+		    )C
+      )D
+  	</select>
+  	
+  	<select id="searchDownExcel" resultType="com.test.board.board.BoardDto">
+  	            SELECT          
+                D.rnum AS rnum,
+				D.BNO AS bno,
+		        D.TITLE AS title, 
+			    D.CONTENT AS content, 
+			    D.WRITER AS writer, 
+			    D.REGDATE AS regdate, 
+			    D.VIEWCNT AS viewCnt,
+			    D.GROUPID AS GROUPID,
+			    D.PARENTS AS PARENTS,
+			    D.LEV AS LEV
+			    ,D.DELYN AS delYN
+			    ,D.STEP AS STEP
+			    ,(SELECT COUNT(DELYN) FROM REVIEW WHERE review.bno=D.bno and delYN='N' ) AS cntRev
+				,(SELECT COUNT(BNO) FROM filedb WHERE filedb.bno=D.bno ) AS fileCnt
+		FROM (SELECT          
+                ROWNUM AS ru
+                ,C.rnum AS rnum,
+				C.BNO AS bno,
+		        C.TITLE AS title, 
+			    C.CONTENT AS content, 
+			    C.WRITER AS writer, 
+			    C.REGDATE AS regdate, 
+			    C.VIEWCNT AS viewCnt,
+			    C.GROUPID AS GROUPID,
+			    C.PARENTS AS PARENTS,
+			    C.LEV AS LEV
+			    ,C.DELYN AS delYN
+			    ,C.STEP AS STEP
+			    ,(SELECT COUNT(BNO) FROM REVIEW WHERE review.bno=C.bno ) AS cntRev
+		FROM(SELECT  ROWNUM AS rrnum,
+		        B.RNUM AS rnum,
+				B.BNO AS bno,
+		        B.TITLE AS title, 
+			    B.CONTENT AS content, 
+			    B.WRITER AS writer, 
+			    B.REGDATE AS regdate, 
+			    B.VIEWCNT AS viewCnt,
+			    B.GROUPID AS GROUPID,
+			    B.PARENTS AS PARENTS,
+			    B.LEV AS LEV
+			    ,B.DELYN AS DELYN
+			    ,B.STEP AS STEP
+		FROM (SELECT ROWNUM AS rnum,
+							   A.BNO AS BNO,
+							   A.TITLE AS TITLE, 
+							   A.CONTENT AS CONTENT, 
+							   A.WRITER AS WRITER, 
+							   TO_CHAR(regdate, 'YY-MM-DD') AS REGDATE,
+							   A.VIEWCNT AS VIEWCNT,
+							   A.GROUPID AS GROUPID,
+							   A.PARENTS AS PARENTS,
+							   A.LEV AS LEV
+							   ,A.DELYN AS DELYN
+							   ,A.STEP AS STEP
+				FROM
+					(SELECT 
+					        BNO AS BNO,
+					        TITLE AS TITLE, 
+							CONTENT AS CONTENT, 
+							WRITER AS WRITER, 
+		        			REGDATE AS REGDATE, 
+							VIEWCNT AS VIEWCNT,
+							GROUPID AS GROUPID,
+						    PARENTS AS PARENTS,
+						    LEV AS LEV
+						    ,DELYN AS DELYN
+						    ,STEP AS STEP
+					   FROM BOARD
+					   WHERE TITLE LIKE '%'||#{w}||'%'
+					   AND DELYN = 'N'
+					   ORDER BY bno 
+					   ) A
+		               ORDER BY rnum DESC
+				)B
+		    )C
+      )D
+  	</select>
+  	<delete id="delFile">
+  		DELETE FROM FILEDB WHERE fno=#{fno}
+  	</delete>
+  	
   </mapper>

@@ -68,12 +68,22 @@ li:active{
 	text-align: center;
 }
 #d_regdate{
-	width: 15%;
+	width: 104px;
 
 }
 #d_writer{
 	width: 11%; 
+	text-align: center;
 }
+
+input#img-button {
+        border: none;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        margin-left: 1528px;
+      }
+
 
 .d_t{
 	text-align: center;
@@ -98,28 +108,45 @@ li:active{
     word-wrap: break-word;
   	text-align: left;
   	overflow:visible;
-  	/*overflow: hidden;
-  	 overflow-x:hidden; 
-  	overflow-y:auto; */
     }
 #t_w{              
 	background-color: white;
     border: 0px solid white;
     font-size: 1.5em;
+    padding-left: 0px;
 }
 #t_t_w{
 	background-color: white;
     border: 0px solid white;
     padding: 0;
     margin-top: 5px;
+    margin-bottom: 5px;
     font-size: 1em;
-    padding-left: 10px;
+}
+
+td .tooltip {
+  display: none;
+  animation: tooltipAni 1s;
+  transition: opacity 0.5s;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: #fff;
+}
+td:hover .tooltip {
+  display: block;
+}
+
+#re_w_p{
+	padding: 0px;
+    background-color: white;
+    border: 0;
+    width: 100%;
+    text-align: left;
+        margin-bottom: 0px;
 }
 #list_btn{
-	float: left;
-    margin-top: 2%;
-    font-size: x-large;
-    margin-left: 6%;
+	margin-left: 0.3%;
 }
 #pre_d_re{
 	padding-top: 3%;
@@ -141,4 +168,26 @@ li:active{
     height: 20%;
     float: left;
     margin-left: 10%;
+}
+
+.css-cancel {
+    display: inline-block;
+    position: relative;
+    margin: 0 20px 0 7px;
+    padding: 0;
+    width: 4px;
+    height: 20px;
+    background: #000;
+    transform: rotate(45deg);
+}
+.css-cancel:before {
+    display: block;
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -8px;
+    width: 20px;
+    height: 4px;
+    margin-top: -2px;
+    background: #000;
 }
